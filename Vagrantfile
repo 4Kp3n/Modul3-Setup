@@ -27,6 +27,10 @@ Vagrant.configure("2") do |config|
     end
     kali.vm.network "private_network", ip: "192.168.56.100", name: 'VirtualBox Host-Only Ethernet Adapter'
     kali.vm.communicator = "ssh"
-    kali.vm.provision "shell", inline: "ip a a 192.168.56.100/24 dev eth1"
+    kali.vm.provision "shell", inline: <<~SHELL 
+    # Modify /etc/default/keyboard to set keyboard layout to German   
+    sudo sed -i 's/us/de/g' /etc/default/keyboard
+    SHELL
+    kali.vm.provision "shell", inline: "sudo reboot"
   end
 end
