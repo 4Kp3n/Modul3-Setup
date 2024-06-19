@@ -1,0 +1,7 @@
+- name: Create a file on a Windows Desktop
+  hosts: windows
+  tasks:
+    - name: Create a file on the Desktop
+      win_file:
+        path: C:\\Users\\vagrant\\Desktop\\example.txt
+        state: touch
