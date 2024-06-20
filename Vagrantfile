@@ -14,6 +14,7 @@ Vagrant.configure("2") do |config|
     win_server.vm.communicator = "winrm"
     win_server.vm.provision :shell, :path => "./vagrant/Install-WMF3Hotfix.ps1", privileged: false
     win_server.vm.provision :shell, :path => "./vagrant/ConfigureRemotingForAnsible.ps1", privileged: false
+    win_server.vm.provision :shell, :path => "./vagrant/set_keyboard_layout.ps1", privileged: false
 
   end
 
