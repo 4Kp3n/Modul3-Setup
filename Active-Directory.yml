@@ -1,0 +1,46 @@
+---
+- name: Create a Windows domain called lab.local and update system
+  hosts: windows
+  tasks:
+    - name: Install the AD-Domain-Services feature
+      win_feature:
+        name: AD-Domain-Services
+        state: present
+
+    - name: Install ADDSDeployment module
+      win_feature:
+        name: RSAT-AD-PowerShell
+        state: present
+
+    - name: Install DNS server
+      win_feature:
+        name: DNS
+        state: present
+
+    - name: Update Windows system
+      win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+        reboot: yes
+
+    - name: Update Windows Defender definitions
+      win_shell: "Update-MpSignature"
+      args:
+        executable: powershell
+
+    - name: Promote server to domain controller and create new forest
+      win_shell: |
+        Install-ADDSForest `
+          -DomainName "lab.local" `
+          -SafeModeAdministratorPassword (ConvertTo-SecureString "vagrant" -AsPlainText -Force) `
+          -DomainNetbiosName "LAB" `
+          -InstallDns `
+          -Force:$true
+      args:
+        executable: powershell
+
+    - name: Reboot after domain creation
+      win_reboot:
+        msg: "Rebooting after AD DS installation"
+        reboot_timeout: 600
