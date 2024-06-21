@@ -1,4 +1,6 @@
 Vagrant.configure("2") do |config|
+  # Increase timeout for better results
+  config.vm.boot_timeout = 900
   # Configure Windows_Server VM
   config.vm.define "Windows_Server" do |win_server|
     win_server.vm.box = "gusztavvargadr/windows-server-2022-standard"
