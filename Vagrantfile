@@ -5,7 +5,7 @@ Vagrant.configure("2") do |config|
     win_server.vm.provider "virtualbox" do |vb|
       vb.name = "Windows Server"
       vb.memory = 4000
-      vb.cpus = 2
+      vb.cpus = 4
       # Startet die Maschine im Hintergrund
       vb.gui = false
     end
@@ -19,6 +19,7 @@ Vagrant.configure("2") do |config|
     win_server.vm.communicator = "winrm"
     win_server.vm.provision :shell, :path => "./vagrant/Install-WMF3Hotfix.ps1", privileged: false
     win_server.vm.provision :shell, :path => "./vagrant/ConfigureRemotingForAnsible.ps1", privileged: false
+    # Tastaturlayout wird beim Login *nicht* verwendet
     win_server.vm.provision :shell, :path => "./vagrant/set_keyboard_layout.ps1", privileged: false
 
   end
@@ -39,6 +40,8 @@ Vagrant.configure("2") do |config|
 
     kali.vm.network "private_network", ip: "192.168.56.100", name: 'VirtualBox Host-Only Ethernet Adapter'
     kali.vm.communicator = "ssh"
+    kali.vm.provision "shell", inline: "sudo apt update"
+    kali.vm.provision "shell", inline: "sudo apt install ansible -y"
     kali.vm.provision "shell", inline: <<~SHELL 
     # Modify /etc/default/keyboard to set keyboard layout to German   
     sudo sed -i 's/us/de/g' /etc/default/keyboard
