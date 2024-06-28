@@ -27,3 +27,19 @@ vagrant up
 ```
 
 (Beim ersten Ausführen werden die Imagedateien heruntergeladen, was eine Weile dauern kann)
+
+## Playbooks
+Das Ausführen von Playbooks geschieht durch folgenden Befehl:
+```bash
+(sudo) ansible-playbook -i inventory <Playbook>
+```
+
+* Mit `-i inventory` wird die Inventory Datei verwendet in der Verbindungsinformationen zum Windows Server hinterlegt sind (nur notwendig, wenn Playbooks für den Windows Server ausgeführt werden sollen)
+* Es ist notwendig `sudo` voranzustellen wenn Playbooks lokal auf Kali ausgeführt werden sollen
+
+## Problemlösungen
+**Das Kommando `vagrant up` wird nicht erfolgreich ausgeführt**
+
+Prüft ob bereits virtuelle Maschinen mit dem selben Namen existieren (ein Löschen über die `VirtualBox` GUI ist bei Wählen der falschen Option nicht ausreichend!).
+Der Ordner in dem die virtuellen Maschinen standardmäßig gespeichert werden ist: `C:\Users\User\VirtualBox VMs`
+Dort müssen ggfs. die Ordner gelöscht werden
