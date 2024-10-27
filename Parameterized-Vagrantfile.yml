@@ -1,0 +1,57 @@
+Vagrant.configure("2") do |config|
+  # Increase timeout for better results
+  config.vm.boot_timeout = 900
+
+  # Get environment variables or set default values
+  install_windows = ENV['INSTALL_WINDOWS'] == 'true'
+  install_kali = ENV['INSTALL_KALI'] == 'true'
+
+  # Windows Server Configuration
+  if install_windows
+    config.vm.define ENV['WINDOWS_VM_NAME'] || "Windows_Server" do |win_server|
+      win_server.vm.box = "gusztavvargadr/windows-server-2022-standard"
+      win_server.vm.provider "virtualbox" do |vb|
+        vb.name = ENV['WINDOWS_VM_DISPLAY_NAME'] || "Windows Server"
+        vb.memory = ENV['WINDOWS_VM_MEMORY'] ? ENV['WINDOWS_VM_MEMORY'].to_i : 4000
+        vb.cpus = ENV['WINDOWS_VM_CPUS'] ? ENV['WINDOWS_VM_CPUS'].to_i : 4
+        vb.gui = false
+      end
+      win_server.vm.synced_folder '.', '/vagrant', disabled: true
+      host_shared_folder = "#{ENV['HOME']}/Shared"
+      guest_shared_folder = "C:/Shared"
+      win_server.vm.synced_folder host_shared_folder, guest_shared_folder, create: true
+      win_server.vm.network "private_network", ip: ENV['WINDOWS_VM_IP'] || "192.168.56.200", name: 'VirtualBox Host-Only Ethernet Adapter'
+      win_server.vm.guest = :windows
+      win_server.vm.communicator = "winrm"
+      win_server.vm.provision :shell, path: "./vagrant/Install-WMF3Hotfix.ps1", privileged: false
+      win_server.vm.provision :shell, path: "./vagrant/ConfigureRemotingForAnsible.ps1", privileged: false
+      win_server.vm.provision :shell, path: "./vagrant/set_keyboard_layout.ps1", privileged: false
+    end
+  end
+
+  # Kali Linux Configuration
+  if install_kali
+    config.vm.define ENV['KALI_VM_NAME'] || "Kali" do |kali|
+      kali.vm.box = "kalilinux/rolling"
+      kali.vm.provider "virtualbox" do |vb|
+        vb.name = ENV['KALI_VM_DISPLAY_NAME'] || "Kali"
+        vb.memory = ENV['KALI_VM_MEMORY'] ? ENV['KALI_VM_MEMORY'].to_i : 4000
+        vb.cpus = ENV['KALI_VM_CPUS'] ? ENV['KALI_VM_CPUS'].to_i : 2
+      end
+      kali.vm.synced_folder '.', '/vagrant', disabled: true
+      host_shared_folder = "#{ENV['HOME']}/Shared"
+      guest_shared_folder = "/home/vagrant/Shared"
+      kali.vm.synced_folder host_shared_folder, guest_shared_folder, create: true
+      kali.vm.network "private_network", ip: ENV['KALI_VM_IP'] || "192.168.56.100", name: 'VirtualBox Host-Only Ethernet Adapter'
+      kali.vm.communicator = "ssh"
+      kali.vm.provision "shell", inline: "sudo apt update"
+      kali.vm.provision "shell", inline: "sudo apt install ansible -y"
+      kali.vm.provision "shell", inline: <<~SHELL
+        # Modify /etc/default/keyboard to set keyboard layout to German
+        sudo sed -i 's/us/de/g' /etc/default/keyboard
+      SHELL
+      kali.vm.provision "shell", inline: "sudo reboot"
+    end
+  end
+end
+
